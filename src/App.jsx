@@ -1,6 +1,9 @@
 import { useRef, useState } from "react"
 
 export default function App() {
+
+  const[editPhoneIndex,setEditPhonIndex]=useState(null)
+
   const nameInput = useRef();
   const priceInput = useRef();
   const qtyInput = useRef();
@@ -10,14 +13,7 @@ export default function App() {
   ;
 
 
-  const [phones, setPhones] = useState([
-
-    { name: 'iphon x', price: 60000, qty: 5 },
-    { name: 'iphon 17', price: 1100, qty: 4 },
-    { name: 'iphon 11', price: 5500, qty: 55 },
-    { name: 'iphon 10', price: 7000, qty: 8 },
-    { name: 'iphon 12', price: 25000, qty: 11 },
-  ]);
+  const [phones, setPhones] = useState(JSON.parse(localStorage.getItem('phones')) || []);
 
 
   const removePhone = (index) => {
@@ -26,6 +22,7 @@ export default function App() {
       let copy = [...phones];
       copy.splice(index, 1);
       setPhones(copy);
+      localStorage.setItem('phones', JSON.stringify(copy));
     }
   };
 
@@ -40,7 +37,31 @@ export default function App() {
     setPhones(copy);
     alert('Phone New Added');
     setnewPhones(false);
+    localStorage.setItem('phones', JSON.stringify(copy));
   };
+  const openEditModal = (index) => {
+    setEditPhonIndex(index);
+    document.getElementById('my_modal_5').showModal()
+    let oldData = phones[index];
+    nameInput.current.value = oldData.name;
+    priceInput.current.value = oldData.price;
+    qtyInput.current.value = oldData.qty;
+  };
+  const saveNewData = () => {
+    let newPhoneData = {
+      name: nameInput.current.value,
+      price: +priceInput.current.value,
+      qty: +qtyInput.current.value,
+    };
+
+    let copy = [...phones];
+    copy[editPhoneIndex] = newPhoneData;
+    setPhones(copy);
+    alert('Phone Data Edit Saccess');
+    console.log('I Edit Phone Indwx :' + editPhoneIndex);
+    localStorage.setItem('phones', JSON.stringify(copy));
+  };
+
 
 
 
@@ -73,7 +94,8 @@ export default function App() {
                     <td>{el.price * el.qty}</td>
                     <td>
                       <div className="w-full flex justify-center gap-4">
-                        <button className="btn btn-warning w-20"> Eidet</button>
+                        <button className="btn btn-warning w-20"
+                          onClick={()=>openEditModal(index)}> Edit</button>
                         <button className="btn btn-error w-20"
                           onClick={() => removePhone(index)}>Remove</button>
                       </div>
@@ -98,17 +120,21 @@ export default function App() {
         </div>
       </div>) : null}
 
-      <button className="btn" onClick={() => document.getElementById('my_modal_5').showModal()}>open modal</button>
+      {/* <button className="btn" onClick={() => document.getElementById('my_modal_5').showModal()}>open modal</button> */}
       <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box flex flex-col justify-center items-center gap-4">
+          <div className=" flex gap-25 w-full  items-center pb-5">
+          <button className="btn btn-error w-20 text"
+              onClick={() => document.getElementById('my_modal_5').close()}>X</button>
           <h3 className="font-bold text-lg">Eidet Phone</h3>
+          </div>
           <input ref={nameInput} type="text" className='w-full input' placeholder='Enter New Phones Name' />
           <input ref={priceInput} type="text" className='w-full input' placeholder='Enter New Phones Praic' />
           <input ref={qtyInput} type="text" className='w-full input' placeholder='Enter New Phones Qty' />
           <div className="modal-action">
             <form method="dialog">
               {/* if there is a button in form, it will close the modal */}
-              <button className="btn btn-primary w-100 ">Close</button>
+              <button className="btn btn-primary w-100 " onClick={saveNewData}>Save</button>
             </form>
           </div>
         </div>
